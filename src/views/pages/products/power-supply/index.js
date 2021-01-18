@@ -73,7 +73,7 @@ const PowerSupply = (props) => {
   };
 
   const onClickAdd = (item) => {
-    let newComponent = 'motherboard';
+    let newComponent = 'power-supply';
     if (listProduct.length === 0) {
       item.component = newComponent;
       listProduct.push(item);

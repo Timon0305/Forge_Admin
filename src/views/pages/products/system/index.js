@@ -73,7 +73,7 @@ const System = (props) => {
   };
 
   const onClickAdd = (item) => {
-    const newComponent = 'storage';
+    const newComponent = 'system';
     if (listProduct.length === 0) {
       item.component = newComponent;
       listProduct.push(item);

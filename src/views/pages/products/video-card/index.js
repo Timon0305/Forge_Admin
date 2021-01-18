@@ -73,7 +73,7 @@ const VideoCard = (props) => {
   };
 
   const onClickAdd = (item) => {
-    let newComponent = 'operating-system';
+    let newComponent = 'video-card';
     if (listProduct.length === 0) {
       item.component = newComponent;
       listProduct.push(item);
