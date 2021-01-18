@@ -8,14 +8,14 @@ import {
   CCardHeader,
   CCardBody,
   CDataTable,
-  CLink
+  CLink, CInput, CFormGroup
 } from '@coreui/react'
 import ApiRedux from '../../../store/redux/apiRedux';
 import RestApi from '../../../store/service/RestApi';
 import {showNotification} from "../../../store/redux/notificationRedux";
 
-const fields = ['component', 'image', 'selection', 'base', 'tax', 'markup', 'actions'];
-
+const fields = ['component', 'image', 'selection', 'base', 'tax [%]', 'markup', 'actions'];
+const bill = ['component', 'markup'];
 const Loading = () => {
   return (
     <div className="d-flex justify-content-center"
@@ -30,7 +30,8 @@ const Loading = () => {
 const List = (props) => {
   const data = useSelector(state => state.List);
   const [productList, setProductList] = useState([]);
-
+  const [tax, setTax] = useState('10');
+  const [totalPrice, setTotalPrice] = useState(0);
   const onClickAdd = (item) => {
     console.log(item)
   };
@@ -38,17 +39,27 @@ const List = (props) => {
   useEffect(() => {
     const getListData = () => {
       if (data && data.products.length) {
-        setProductList(data.products)
+        setProductList(data.products);
+        calculatePrice(data.products)
       } else {
         let listItem  = JSON.parse(sessionStorage.getItem('listItems'))
         ? JSON.parse(sessionStorage.getItem('listItems'))
           : [];
         setProductList(listItem);
+        calculatePrice(listItem)
       }
     };
     getListData();
+
   }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
+  const calculatePrice = async(item) => {
+    let price = 0;
+    for (let index of item) {
+      price += parseFloat(Math.floor((parseFloat(index.price.split('$')[1]) + parseFloat(index.price.split('$')[1] * tax/100))*100)/100);
+    }
+    setTotalPrice(Math.round(price))
+  } ;
   return (
     <>
       <CRow>
@@ -63,11 +74,10 @@ const List = (props) => {
                   items={productList}
                   fields={fields}
                   itemsPerPage={10}
-                  pagination
                   scopedSlots={{
                     'component' :
                       (item) => (
-                        <td className='v-align'>
+                        <td className='v-align' style={{'verticalAlign' : 'middle'}}>
                           <CLink to={'/products/' + item.component}>
                             <u>
                               {item.component}
@@ -77,7 +87,7 @@ const List = (props) => {
                       ),
                     'image':
                       (item) => (
-                        <td className="text-left v-align">
+                        <td className="text-left v-align"  style={{'verticalAlign' : 'middle'}}>
                           <div className="c-avatar">
                             <img src={item.image} className="c-avatar-img" style={{borderRadius: 'none!important'}} alt="avatar"/>
                           </div>
@@ -85,7 +95,7 @@ const List = (props) => {
                       ),
                     'selection':
                       (item) => (
-                        <td className='v-align'>
+                        <td className='v-align'  style={{'verticalAlign' : 'middle'}}>
                           <div className="h6">
                             {item.name}
                           </div>
@@ -93,33 +103,33 @@ const List = (props) => {
                       ),
                     'base':
                       (item) => (
-                        <td className='v-align'>
+                        <td className='v-align'  style={{'verticalAlign' : 'middle'}}>
                           <div className="h6">
                             {item.price}
                           </div>
                         </td>
                       ),
-                    'tax':
+                    'tax [%]':
                       (item) => (
-                        <td className='v-align'>
+                        <td className='v-align'  style={{'verticalAlign' : 'middle'}}>
                           <div className="h6">
-                            10%
+                            {tax}
                           </div>
                         </td>
                       ),
                     'markup':
                       (item) => (
-                        <td className='v-align'>
-                          <div className="h6">
-                            {item.price}
-                          </div>
+                        <td className='v-align'  style={{'verticalAlign' : 'middle'}}>
+                          <CFormGroup style={{'marginBottom': 0}}>
+                            <CInput id="name" placeholder="Enter your name" defaultValue={item.price} />
+                          </CFormGroup>
                         </td>
                       ),
                     'actions':
                       (item) => (
-                        <td className='v-align'>
+                        <td className='v-align'  style={{'verticalAlign' : 'middle'}}>
                           <CButton active variant="ghost" color="success" aria-pressed="true" size="sm"
-                                   className={"btn-pill"} onClick={() => onClickAdd(item)}>Add</CButton>&nbsp;
+                                   className={"btn-pill"} onClick={() => onClickAdd(item)}>Change</CButton>&nbsp;
                         </td>
                       )
 
@@ -131,7 +141,46 @@ const List = (props) => {
             <Loading/>}
         </CCol>
         <CCol xs="12" lg="3">
-
+          <CCard>
+            <CCardHeader>
+              Total Price
+            </CCardHeader>
+            <CCardBody>
+              <CDataTable
+                items={productList}
+                fields={bill}
+                itemsPerPage={10}
+                sorter
+                scopedSlots={{
+                  'component' :
+                    (item) => (
+                      <td className='v-align'>
+                        <div className="h6">
+                            {item.component}
+                        </div>
+                      </td>
+                    ),
+                  'markup':
+                    (item) => (
+                      <td className='v-align'>
+                        <div className="h6">
+                         $ &nbsp; {Math.floor((parseFloat(item.price.split('$')[1]) + parseFloat(item.price.split('$')[1] * tax/100))*100)/100}
+                        </div>
+                      </td>
+                    ),
+                }}
+              />
+              <hr/>
+              <div className='h3 justify-content-around d-flex'>
+                <h3>Total Price</h3>
+                <h3>$ &nbsp;{totalPrice}</h3>
+              </div>
+              <hr/>
+              <div>
+                <CButton className='btn btn-danger' size='xs' style={{width: '100%'}}>Build Now</CButton>
+              </div>
+            </CCardBody>
+          </CCard>
         </CCol>
       </CRow>
 
