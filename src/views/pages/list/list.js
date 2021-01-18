@@ -58,7 +58,7 @@ const List = (props) => {
     for (let index of item) {
       price += parseFloat(Math.floor((parseFloat(index.price.split('$')[1]) + parseFloat(index.price.split('$')[1] * tax/100))*100)/100);
     }
-    setTotalPrice(Math.round(price))
+    setTotalPrice(Math.round(price * 100)/100)
   } ;
   return (
     <>
